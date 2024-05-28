@@ -1,0 +1,129 @@
+import flet as ft
+import random
+
+def main(page: ft.Page):
+    page.scroll = ft.ScrollMode.AUTO
+    page.bgcolor = "lightgreen"
+
+    kerdesek = [
+        {
+            "kérdés": "Hány napból áll egy év?",
+            "típus": "single",
+            "valaszlehetőségek": ["400", "365", "200", "197"],
+            "jó_valasz": ["365"]
+        },
+        {
+            "kérdés": "Melyik programozói ágazat foglalkozik a háttérben történő dolgok fejlesztésével?",
+            "típus": "multiple",
+            "valaszlehetőségek": ["Backend", "Frontend", "Fullstack"],
+            "jó_valasz": ["Backend", "Fullstack"]
+        },
+        {
+            "kérdés": "Hány kontinens van a földön",
+            "típus": "single",
+            "valaszlehetőségek": ["10", "9", "6", "7"],
+            "jó_valasz": ["7"]
+        },
+        {
+            "kérdés": "Melyik iskola a jobb?",
+            "típus": "single",
+            "valaszlehetőségek": ["Vasvári", "Krúdy"],
+            "jó_valasz": ["Vasvári"]
+        },
+        {
+            "kérdés": "Milyen színű az ég?",
+            "típus": "single",
+            "valaszlehetőségek": ["kék", "lila", "piros", "zöld"],
+            "jó_valasz": ["kék"]
+        },
+        {
+            "kérdés": "Hogyan nevezik a föld legkülső takarórétegét?",
+            "típus": "single",
+            "valaszlehetőségek": ["köpeny", "köpönyeg", "külsöréteg", "föld"],
+            "jó_valasz": ["köpeny"]
+        },
+        {
+            "kérdés": "Miből kell keveset fogyasztani ahhoz ,hogy valaki lefogyjon?",
+            "típus": "multiple",
+            "valaszlehetőségek": ["fehérje", "szénhidrát", "vitaminok", "só"],
+            "jó_valasz": ["fehérje", "szénhidrát"]
+        },
+        {
+            "kérdés": "Melyik technológia foglalkozik a robot technológiával",
+            "típus": "single",
+            "valaszlehetőségek": ["építészet", "robotika", "grafika", "művészet"],
+            "jó_valasz": ["robotika"]
+        },
+        {
+            "kérdés": "Hol találhatóak a piramisok",
+            "típus": "single",
+            "valaszlehetőségek": ["Egyiptom", "Magyarország", "Kína", "Ukrajna"],
+            "jó_valasz": ["Russia"]
+        },
+        {
+            "kérdés": "Melyik a kaukktojás?",
+            "típus": "multiple",
+            "valaszlehetőségek": ["byte", "gigabyte", "terrabyte","szék" ,"monitor"],
+            "jó_valasz": ["szék", "monitor"]
+        }
+    ]
+
+    random.shuffle(kerdesek)  
+
+    user_answers = {}
+
+    def submit(e):
+        score = 0
+        total = len(kerdesek)
+        for i, q in enumerate(kerdesek):
+            if q["típus"] == "single":
+                if user_answers.get(i) in q["jó_valasz"]:
+                    score += 1
+            elif q["típus"] == "multiple":
+                if set(user_answers.get(i, [])) == set(q["jó_valasz"]):
+                    score += 1
+        result_text.value = f"You scored {score} out of {total}"
+        page.update()
+
+    def create_question_ui(q, index):
+        if q["típus"] == "single":
+            options = q["valaszlehetőségek"]
+            random.shuffle(options)  
+            radio_group = ft.RadioGroup(
+                content=ft.Column(
+                    [ft.Radio(label=o, value=o) for o in options],
+                    spacing=10
+                ),
+                on_change=lambda e: user_answers.update({index: e.control.value})
+            )
+            return ft.Column([ft.Text(q["kérdés"])] + [radio_group])
+        elif q["típus"] == "multiple":
+            valaszok = q["valaszlehetőségek"]
+            random.shuffle(valaszok)  
+            checkboxes = [
+                ft.Checkbox(label=o, on_change=lambda e, o=o: update_multiple_answers(index, o, e.control.value))
+                for o in valaszok
+            ]
+            return ft.Column([ft.Text(q["kérdés"])] + checkboxes)
+
+    def update_multiple_answers(index, option, checked):
+        if index not in user_answers:
+            user_answers[index] = []
+        if checked:
+            user_answers[index].append(option)
+        else:
+            user_answers[index].remove(option)
+
+    question_uis = [create_question_ui(q, i) for i, q in enumerate(kerdesek)]
+    submit_button = ft.ElevatedButton(text="Submit", on_click=submit)
+    result_text = ft.Text()
+
+    scrollable_column = ft.Column(
+        controls=question_uis + [submit_button, result_text],
+        scroll="always"
+        
+    )
+
+    page.add(scrollable_column)
+
+ft.app(target=main)
