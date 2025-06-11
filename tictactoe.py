@@ -106,7 +106,7 @@ player = random.choice(players)
 buttons = [[0,0,0],
            [0,0,0],
            [0,0,0]]
-
+# label
 label = Label(text=player + " turn", font=('consolas',30))
 label.pack(side="top")
 
